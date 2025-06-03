@@ -103,22 +103,22 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/logo/logo.png"
+  image_path: "assets/logo/posmobile1.png"
   adaptive_icon_background: "#FFFFFF"  # Set a background color for adaptive icons
-  adaptive_icon_foreground: "assets/logo/logo.png"
+  adaptive_icon_foreground: "assets/logo/posmobile1.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   web:
     generate: true
-    image_path: "assets/logo/logo.png"  # Ensure this path is correct
+    image_path: "assets/logo/posmobile1.png"  # Ensure this path is correct
     background_color: "#FFFFFF"  # Ensure this is the correct hex color code
     theme_color: "#FFFFFF"  # Ensure this is the correct hex color code
   windows:
     generate: true
-    image_path: "assets/logo/logo.png"  # Ensure this path is correct
+    image_path: "assets/logo/posmobile1.png"  # Ensure this path is correct
     icon_size: 48 # min:48, max:256, default: 48
   macos:
     generate: true
-    image_path: "assets/logo/logo.png"  # Ensure this path is correct
+    image_path: "assets/logo/posmobile1.png"  # Ensure this path is correct
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

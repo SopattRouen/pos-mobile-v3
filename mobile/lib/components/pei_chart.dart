@@ -15,46 +15,43 @@ class DonutPie extends StatelessWidget {
   Widget build(BuildContext context) {
     final TooltipBehavior tooltip = TooltipBehavior(enable: true);
 
-    return Column(
-      children: [
-        SfCircularChart(
-          tooltipBehavior: tooltip,
-          series: <CircularSeries<DonutPieData, String>>[
-            DoughnutSeries<DonutPieData, String>(
-              dataSource: data,
-              xValueMapper: (DonutPieData data, _) => data.x,
-              yValueMapper: (DonutPieData data, _) => data.y,
-              pointColorMapper: (DonutPieData data, _) => data.color,
-              dataLabelMapper:
-                  (DonutPieData data, _) => NumberFormat.decimalPattern()
-                      .format(data.y), // Formatting here
-              dataLabelSettings: DataLabelSettings(
-                isVisible: true,
-                labelPosition: ChartDataLabelPosition.inside,
-                // textStyle: GoogleFonts.kantumruyPro(fontSize: 12),
-              ),
-              name: title,
-              startAngle: 270,
-              endAngle: 90,
-            ),
-          ],
-          legend: const Legend(
-            itemPadding: 10,
-            toggleSeriesVisibility: true,
-            height: '60%',
-            isResponsive: true,
+    return SfCircularChart(
+      tooltipBehavior: tooltip,
+      series: <CircularSeries<DonutPieData, String>>[
+        DoughnutSeries<DonutPieData, String>(
+          dataSource: data,
+          xValueMapper: (DonutPieData data, _) => data.x,
+          yValueMapper: (DonutPieData data, _) => data.y,
+          pointColorMapper: (DonutPieData data, _) => data.color,
+          dataLabelMapper: (DonutPieData data, _) =>
+              NumberFormat.decimalPattern().format(data.y),
+          dataLabelSettings: const DataLabelSettings(
             isVisible: true,
-            overflowMode: LegendItemOverflowMode.wrap,
-            position: LegendPosition.bottom,
-            alignment: ChartAlignment.center,
+            labelPosition: ChartDataLabelPosition.inside,
+            textStyle: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
+          name: title,
+          startAngle: 270,
+          endAngle: 90,
         ),
       ],
+      legend: const Legend(
+        isVisible: true,
+
+        position: LegendPosition.bottom,
+        alignment: ChartAlignment.center,
+        overflowMode: LegendItemOverflowMode.wrap,
+        itemPadding: 5, // Reduced to minimize spacing
+        padding: 0, // Added to reduce gap between chart and legend
+      ),
     );
   }
 }
 
-// Helper class for data representation
 class DonutPieData {
   final String x;
   final double y;
@@ -65,7 +62,7 @@ class DonutPieData {
 
 class StatisticChat extends StatefulWidget {
   final List<ChartData> data; // Use a generic ChartData class
-  const StatisticChat({super.key, required this.data});
+  const StatisticChat({super.key, required this.data, required salesData});
 
   @override
   StatisticChatState createState() => StatisticChatState();
