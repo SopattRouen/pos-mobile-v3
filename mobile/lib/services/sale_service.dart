@@ -1,4 +1,4 @@
-import 'dart:developer';
+
 
 import 'package:calendar/shared/error/error_type.dart';
 import 'package:calendar/utils/dio.client.dart';
@@ -30,7 +30,7 @@ class SaleService {
         },
       );
 
-      log("Response: ${response.data}");
+      // log("Response: ${response.data}");
 
       return response.data as Map<String, dynamic>;
     } on DioException catch (dioError) {

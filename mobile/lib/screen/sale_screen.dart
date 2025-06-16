@@ -22,124 +22,119 @@ class _SaleScreenState extends State<SaleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => SaleProvider()..getHome(),
-      child: Consumer<SaleProvider>(
-        builder: (context, provider, child) {
-          return Scaffold(
-            backgroundColor: Colors.white,
-            appBar: AppBar(
-              title: Text(
-                'ការលក់',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-              ),
-              actions: [
-                Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Icon(Icons.more_horiz, color: HColors.darkgrey),
-                ),
-              ],
-              centerTitle: true,
-              bottom: CustomHeader(),
+    return Consumer<SaleProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: Text(
+              'ការលក់',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
-            body: SafeArea(
-              child: RefreshIndicator(
-                key: _refreshIndicatorKey,
-                color: Colors.blue[800],
-                backgroundColor: Colors.white,
-                onRefresh: () => _refreshData(provider),
-                child:
-                    provider.isLoading
-                        ? SaleSkeleton()
-                        : provider.error != null
-                        ? Center(child: Text('Something went wrong'))
-                        : SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: SafeArea(
-                            child: Column(
-                              children: [
-                                // Header with balance
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: Color(0xFFE5E5E5),
-                                        width: 1,
-                                      ),
+            actions: [
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: Icon(Icons.more_horiz, color: HColors.darkgrey),
+              ),
+            ],
+            centerTitle: true,
+            bottom: CustomHeader(),
+          ),
+          body: SafeArea(
+            child: RefreshIndicator(
+              key: _refreshIndicatorKey,
+              color: Colors.blue[800],
+              backgroundColor: Colors.white,
+              onRefresh: () => _refreshData(provider),
+              child:
+                  provider.isLoading
+                      ? SaleSkeleton()
+                      : provider.error != null
+                      ? Center(child: Text('Something went wrong'))
+                      : SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SafeArea(
+                          child: Column(
+                            children: [
+                              // Header with balance
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: Color(0xFFE5E5E5),
+                                      width: 1,
                                     ),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'ការលក់សរុប',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Color(0xFF666666),
-                                        ),
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        NumberFormat(
-                                          "#,##0 ៛",
-                                        ).format(provider.totalSales),
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'ការលក់សរុប',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Color(0xFF666666),
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      NumberFormat(
+                                        "#,##0 ៛",
+                                      ).format(provider.totalSales),
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
 
-                                // Transaction list
-                                ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  itemCount:
-                                      provider.groupedTransactions.length,
-                                  itemBuilder: (context, index) {
-                                    final group =
-                                        provider.groupedTransactions[index];
-                                    return Column(
-                                      children: [
-                                        _buildDateSection(group['date']),
-                                        ...group['transactions'].asMap().entries.map((
-                                          entry,
-                                        ) {
-                                          final transaction = entry.value;
-                                          final String avatarUrl =
-                                              transaction['cashier']['avatar'] !=
-                                                      null
-                                                  ? 'https://pos-v2-file.uat.camcyber.com/${transaction['cashier']['avatar']}'
-                                                  : '';
-                                          return _buildTransactionItem(
-                                            transaction['receipt_number'],
-                                            NumberFormat("#,##0 ៛").format(
-                                              transaction['total_price'],
-                                            ),
-                                            avatarUrl,
-                                            transaction['id'], // Pass the transaction ID
-                                            provider, // Pass the provider
-                                          );
-                                        }).toList(),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
+                              // Transaction list
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: provider.groupedTransactions.length,
+                                itemBuilder: (context, index) {
+                                  final group =
+                                      provider.groupedTransactions[index];
+                                  return Column(
+                                    children: [
+                                      _buildDateSection(group['date']),
+                                      ...group['transactions'].asMap().entries.map((
+                                        entry,
+                                      ) {
+                                        final transaction = entry.value;
+                                        final String avatarUrl =
+                                            transaction['cashier']['avatar'] !=
+                                                    null
+                                                ? 'https://pos-v2-file.uat.camcyber.com/${transaction['cashier']['avatar']}'
+                                                : '';
+                                        return _buildTransactionItem(
+                                          transaction['receipt_number'],
+                                          NumberFormat(
+                                            "#,##0 ៛",
+                                          ).format(transaction['total_price']),
+                                          avatarUrl,
+                                          transaction['id'], // Pass the transaction ID
+                                          provider, // Pass the provider
+                                        );
+                                      }).toList(),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
-              ),
+                      ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 

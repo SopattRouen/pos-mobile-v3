@@ -16,7 +16,10 @@ class SaleProvider extends ChangeNotifier {
   Map<String, dynamic>? get saleData => _saleData;
   List<Map<String, dynamic>> get groupedTransactions => _groupedTransactions;
   double get totalSales => _totalSales;
-
+  SaleProvider() {
+    // Fetch data when the provider is created
+    getHome();
+  }
   Future<void> getHome({
     String? from,
     String? to,

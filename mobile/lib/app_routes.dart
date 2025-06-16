@@ -1,4 +1,3 @@
-
 // for this app route you can set up the route by yourself to fit your project
 class AppRoutes {
   static const String home = '/';
@@ -11,7 +10,10 @@ class AppRoutes {
   static const String request = '/request';
   static const String users = '/users';
   static const String product = '/product';
+  static const String productType = '/product-type';
+  static const String updateProductType = '/product-type-update';
+  static const String createProductType = '/create-product-type';
   static const String createProduct = '/create-product';
-  static const String productDetail= '/product-detail';
-  static const String updateProduct= '/product-update';
+  static const String productDetail = '/product-detail';
+  static const String updateProduct = '/product-update';
 }

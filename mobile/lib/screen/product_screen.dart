@@ -1,4 +1,4 @@
-
+import 'package:calendar/app_routes.dart';
 import 'package:calendar/entity/helper/colors.dart';
 import 'package:calendar/shared/component/bottom_appbar.dart';
 import 'package:calendar/providers/local/product_provider.dart';
@@ -19,7 +19,6 @@ class _ProductScreenState extends State<ProductScreen> {
   Future<void> _refreshData(ProductProvider provider) async {
     return await provider.getHome();
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -30,34 +29,35 @@ class _ProductScreenState extends State<ProductScreen> {
             (provider.productData != null &&
                     provider.productData?['data'] is List)
                 ? [
-                    'All',
-                    ...(provider.productData!['data']
-                            .map((product) => product['type']?['name'] as String?)
-                            .where((name) => name != null)
-                            .toSet()
-                            .cast<String>()
-                            .toList()),
-                  ]
+                  'All',
+                  ...(provider.productData!['data']
+                      .map((product) => product['type']?['name'] as String?)
+                      .where((name) => name != null)
+                      .toSet()
+                      .cast<String>()
+                      .toList()),
+                ]
                 : ['All'];
-    
+
         // Map API data to products
         final List<Map<String, dynamic>> products =
             (provider.productData != null &&
                     provider.productData?['data'] is List)
                 ? (provider.productData!['data'] as List).map((item) {
-                    return {
-                      'id': item['id'], // Added for deletion
-                      'category': item['type']?['name'] ?? 'Unknown',
-                      'code': item['code'] ?? '',
-                      'name': item['name'] ?? '',
-                      'price': item['unit_price'] != null
-                          ? '${item['unit_price'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} ៛'
-                          : '0 ៛',
-                      'image': item['image'] ?? '',
-                    };
-                  }).toList()
+                  return {
+                    'id': item['id'], // Added for deletion
+                    'category': item['type']?['name'] ?? 'Unknown',
+                    'code': item['code'] ?? '',
+                    'name': item['name'] ?? '',
+                    'price':
+                        item['unit_price'] != null
+                            ? '${item['unit_price'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} ៛'
+                            : '0 ៛',
+                    'image': item['image'] ?? '',
+                  };
+                }).toList()
                 : [];
-    
+
         return Scaffold(
           backgroundColor: Colors.white,
           appBar: AppBar(
@@ -68,37 +68,39 @@ class _ProductScreenState extends State<ProductScreen> {
             centerTitle: true,
             bottom: CustomHeader(),
           ),
-          body: RefreshIndicator(
-            key: _refreshIndicatorKey,
-            color: Colors.blue[800],
-            backgroundColor: Colors.white,
-            onRefresh: () => _refreshData(provider),
-            child: provider.isLoading
-                ? Center(
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(
-                          height: 60,
-                          width: 60,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.0,
-                          ),
+          body: SafeArea(
+            child: RefreshIndicator(
+              key: _refreshIndicatorKey,
+              color: Colors.blue[800],
+              backgroundColor: Colors.white,
+              onRefresh: () => _refreshData(provider),
+              child:
+                  provider.isLoading
+                      ? Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox(
+                              height: 60,
+                              width: 60,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                              ),
+                            ),
+                            Text(
+                              'សូមរងចាំ',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          'សូមរងចាំ',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : provider.error != null
-                    ? Center(child: Text('Something went wrong'))
-                    : SingleChildScrollView(
+                      )
+                      : provider.error != null
+                      ? Center(child: Text('Something went wrong'))
+                      : SingleChildScrollView(
                         physics: AlwaysScrollableScrollPhysics(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,9 +128,10 @@ class _ProductScreenState extends State<ProductScreen> {
                                       },
                                       selectedColor: HColors.blue,
                                       labelStyle: TextStyle(
-                                        color: _selectedTabIndex == index
-                                            ? Colors.white
-                                            : Colors.black,
+                                        color:
+                                            _selectedTabIndex == index
+                                                ? Colors.white
+                                                : Colors.black,
                                       ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5),
@@ -143,7 +146,7 @@ class _ProductScreenState extends State<ProductScreen> {
                                 }),
                               ),
                             ),
-    
+
                             // Product list
                             if (_filteredProducts(products, categories).isEmpty)
                               Center(
@@ -155,14 +158,21 @@ class _ProductScreenState extends State<ProductScreen> {
                             else
                               Column(
                                 children: List.generate(
-                                  _filteredProducts(products, categories)
-                                      .length,
+                                  _filteredProducts(
+                                    products,
+                                    categories,
+                                  ).length,
                                   (index) {
-                                    final product = _filteredProducts(
-                                        products, categories)[index];
+                                    final product =
+                                        _filteredProducts(
+                                          products,
+                                          categories,
+                                        )[index];
                                     return InkWell(
-                                      onTap: (){
-                                        context.push('/product-detail/${product['id']}');
+                                      onTap: () {
+                                        context.push(
+                                          '/product-detail/${product['id']}',
+                                        );
                                       },
                                       child: Dismissible(
                                         key: Key(product['id'].toString()),
@@ -179,36 +189,48 @@ class _ProductScreenState extends State<ProductScreen> {
                                         ),
                                         confirmDismiss: (direction) async {
                                           return await showDialog<bool>(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              title: Text('លុបផលិតផល'),
-                                              content: Text(
-                                                  'តើអ្នកប្រាកដទេថាចង់លុប ${product['name']}?'),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(
-                                                          context, false),
-                                                  child: Text('បោះបង់'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(
-                                                          context, true),
-                                                  child: Text('លុប'),
-                                                ),
-                                              ],
-                                            ),
-                                          ) ?? false;
+                                                context: context,
+                                                builder:
+                                                    (context) => AlertDialog(
+                                                      title: Text('លុបផលិតផល'),
+                                                      content: Text(
+                                                        'តើអ្នកប្រាកដទេថាចង់លុប ${product['name']}?',
+                                                      ),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed:
+                                                              () =>
+                                                                  Navigator.pop(
+                                                                    context,
+                                                                    false,
+                                                                  ),
+                                                          child: Text('បោះបង់'),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed:
+                                                              () =>
+                                                                  Navigator.pop(
+                                                                    context,
+                                                                    true,
+                                                                  ),
+                                                          child: Text('លុប'),
+                                                        ),
+                                                      ],
+                                                    ),
+                                              ) ??
+                                              false;
                                         },
                                         onDismissed: (direction) async {
                                           await provider.deleteProduct(
-                                              product['id']);
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
+                                            product['id'],
+                                          );
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                  'បានលុប ${product['name']}'),
+                                                'បានលុប ${product['name']}',
+                                              ),
                                               duration: Duration(seconds: 2),
                                             ),
                                           );
@@ -228,6 +250,14 @@ class _ProductScreenState extends State<ProductScreen> {
                           ],
                         ),
                       ),
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            clipBehavior: Clip.antiAlias,
+            onPressed: () {
+              context.push(AppRoutes.productType);
+            },
+            child: Icon(Icons.category_outlined),
           ),
         );
       },
@@ -238,7 +268,9 @@ class _ProductScreenState extends State<ProductScreen> {
 int _selectedTabIndex = 0;
 
 List<Map<String, dynamic>> _filteredProducts(
-    List<Map<String, dynamic>> products, List<String> categories) {
+  List<Map<String, dynamic>> products,
+  List<String> categories,
+) {
   if (_selectedTabIndex == 0) return products;
   final selectedCategory = categories[_selectedTabIndex];
   return products
@@ -271,7 +303,10 @@ class ProductItem extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: HColors.darkgrey.withOpacity(0.2), width: 1),
+          bottom: BorderSide(
+            color: HColors.darkgrey.withOpacity(0.2),
+            width: 1,
+          ),
         ),
       ),
       child: Row(
@@ -285,12 +320,13 @@ class ProductItem extends StatelessWidget {
               width: 65,
               height: 65,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 65,
-                height: 65,
-                color: Colors.grey[300],
-                child: Icon(Icons.error, color: Colors.red),
-              ),
+              errorBuilder:
+                  (context, error, stackTrace) => Container(
+                    width: 65,
+                    height: 65,
+                    color: Colors.grey[300],
+                    child: Icon(Icons.error, color: Colors.red),
+                  ),
             ),
           ),
           const SizedBox(width: 12),

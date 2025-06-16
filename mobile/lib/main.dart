@@ -2,11 +2,15 @@ import 'package:calendar/entity/helper/colors.dart';
 import 'package:calendar/providers/local/home_provider.dart';
 import 'package:calendar/providers/local/product/create_product_provider.dart';
 import 'package:calendar/providers/local/product_provider.dart';
+import 'package:calendar/providers/local/product_type_provider.dart';
 import 'package:calendar/providers/local/sale_provider.dart';
 import 'package:calendar/screen/product/create_product_screen.dart';
 import 'package:calendar/screen/product/detail_product.dart';
 import 'package:calendar/screen/product/update_product_screen.dart';
 import 'package:calendar/screen/product_screen.dart';
+import 'package:calendar/screen/product_type/create_product_type_screen.dart';
+import 'package:calendar/screen/product_type/update_product_type_screen.dart';
+import 'package:calendar/screen/product_type_screen.dart';
 import 'package:calendar/screen/sale_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -18,7 +22,6 @@ import 'package:calendar/providers/global/auth_provider.dart';
 import 'package:calendar/screen/home_screen.dart';
 import 'package:calendar/screen/login_screen.dart';
 import 'package:calendar/screen/profile_screen.dart';
-
 import 'package:calendar/utils/dio.client.dart';
 
 import 'package:provider/provider.dart';
@@ -45,7 +48,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => SaleProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
-        ChangeNotifierProvider(create:(_)=>CreateProductProvider()),
+        ChangeNotifierProvider(create: (_) => CreateProductProvider()),
+        ChangeNotifierProvider(create: (_) => ProductTypeProvider()),
       ],
       child: const MyApp(),
     ),
@@ -81,6 +85,7 @@ class MyApp extends StatelessWidget {
           scrolledUnderElevation: 0,
           titleTextStyle: TextStyle(
             fontSize: 20,
+            fontFamily: 'KantumruyPro',
             fontWeight: FontWeight.w500,
             color: Colors.black,
           ),
@@ -139,6 +144,14 @@ final GoRouter _router = GoRouter(
       builder: (context, state) => CreateProductsScreen(),
     ),
     GoRoute(
+      path: AppRoutes.productType,
+      builder: (context, state) => ProductTypeScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.createProductType,
+      builder: (context, state) => CreateProductTypeScreen(),
+    ),
+    GoRoute(
       path: '${AppRoutes.productDetail}/:id',
       builder: (context, state) {
         final id = state.pathParameters['id'];
@@ -150,6 +163,13 @@ final GoRouter _router = GoRouter(
       builder: (context, state) {
         final id = state.pathParameters['id'];
         return UpdateProductScreen(id: id!);
+      },
+    ),
+    GoRoute(
+      path: '${AppRoutes.updateProductType}/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id'];
+        return UpdateProductTypeScreen(id: id!);
       },
     ),
     // Removed duplicate product route
@@ -303,7 +323,7 @@ class _MainLayoutState extends State<MainLayout> {
                 icon: Icons.category_rounded,
                 label: 'ប្រភេទផលិតផល',
                 onTap: () {
-                  Navigator.pop(context);
+                  context.push(AppRoutes.createProductType);
                   // Add your navigation logic here
                 },
               ),
@@ -333,10 +353,10 @@ class _MainLayoutState extends State<MainLayout> {
             children: [
               Container(
                 padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  shape: BoxShape.circle,
-                ),
+                // decoration: BoxDecoration(
+                //   // color: Colors.grey[200],
+                //   // shape: BoxShape.circle,
+                // ),
                 child: Icon(icon, size: 24.0, color: HColors.darkgrey),
               ),
               const SizedBox(width: 12.0),
