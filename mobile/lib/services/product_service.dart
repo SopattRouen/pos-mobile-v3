@@ -1,12 +1,24 @@
-import 'package:calendar/models/pagination_structure_model.dart';
-import 'package:calendar/models/response_structure_model.dart';
-import 'package:calendar/shared/error/error_type.dart';
+// import 'dart:developer';
+
+// import 'package:calendar/shared/error/error_type.dart';
 import 'package:calendar/utils/dio.client.dart';
-import 'package:calendar/utils/help_util.dart';
+// import 'package:calendar/utils/help_util.dart';
 import 'package:dio/dio.dart';
 
 class ProductService {
-  Future<ResponseStructure<PaginationStructure<Map<String, dynamic>>>> getData({
+  Future<Map<String, dynamic>> dataSetup() async {
+    try {
+      final response = await DioClient.dio.get("/admin/products/setup-data");
+      // log("${response}");
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (_) {
+      rethrow;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> getData({
     required String? key,
     required String? sortBy,
     required String? order,
@@ -14,55 +26,41 @@ class ProductService {
     required String? page,
   }) async {
     try {
-      final response = await DioClient.dio.get("/admin/products");
-      return ResponseStructure<
-        PaginationStructure<Map<String, dynamic>>
-      >.fromJson(
-        response.data as Map<String, dynamic>,
-        dataFromJson:
-            (json) => PaginationStructure<Map<String, dynamic>>.fromJson(
-              json,
-              resultFromJson: (item) => item,
-            ),
+      final response = await DioClient.dio.get(
+        "/admin/products?page=1&order=desc&sort_by=created_at&limit=20",
       );
-    } on DioException catch (dioError) {
-      if (dioError.response != null) {
-        printError(
-          errorMessage: ErrorType.requestError,
-          statusCode: dioError.response!.statusCode,
-        );
-        throw Exception(ErrorType.requestError);
-      } else {
-        printError(errorMessage: ErrorType.networkError, statusCode: null);
-        throw Exception(ErrorType.networkError);
-      }
+      // log("${response}");
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (_) {
+      rethrow;
     } catch (e) {
-      printError(errorMessage: 'Something went wrong.', statusCode: 500);
-      throw Exception(ErrorType.unexpectedError);
+      rethrow;
     }
   }
 
-  Future<ResponseStructure<Map<String, dynamic>>> getProductType() async {
+  Future<Map<String, dynamic>> getDetailProduct({
+    required String id
+  }) async {
     try {
-      final response = await DioClient.dio.get("/admin/products/types/data");
-      return ResponseStructure<Map<String, dynamic>>.fromJson(
-        response.data as Map<String, dynamic>,
-        dataFromJson: (json) => json,
+      final response = await DioClient.dio.get(
+        "/admin/products/$id",
       );
-    } on DioException catch (dioError) {
-      if (dioError.response != null) {
-        printError(
-          errorMessage: ErrorType.requestError,
-          statusCode: dioError.response!.statusCode,
-        );
-        throw Exception(ErrorType.requestError);
-      } else {
-        printError(errorMessage: ErrorType.networkError, statusCode: null);
-        throw Exception(ErrorType.networkError);
-      }
+      // log("${response}");
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (_) {
+      rethrow;
     } catch (e) {
-      printError(errorMessage: 'Something went wrong.', statusCode: 500);
-      throw Exception(ErrorType.unexpectedError);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteProduct(int id) async {
+    try {
+      await DioClient.dio.delete("/admin/products/$id");
+    } on DioException catch (_) {
+      rethrow;
+    } catch (e) {
+      rethrow;
     }
   }
 }

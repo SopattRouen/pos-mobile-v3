@@ -1,52 +1,76 @@
-/// Represents a paginated API response structure with generic result type
 class PaginationStructure<T> {
-  /// Number of items per page
   final int limit;
-
-  /// Page offset (starting from 0 or 1 depending on API)
-  final int offset;
-
-  /// Total number of items available
+  final int page;
+  final int totalPage;
   final int total;
-
-  /// List of results with generic type T
   final List<T> results;
 
   PaginationStructure({
     required this.limit,
-    required this.offset,
+    required this.page,
+    required this.totalPage,
     required this.total,
     required this.results,
   });
 
-  /// Creates a PaginationStructure from JSON with a custom result parser
   factory PaginationStructure.fromJson(
-    Map<String, dynamic> json, {
+    Map<String, dynamic>? json, {
     required T Function(Map<String, dynamic>) resultFromJson,
   }) {
+    // If json is null, provide default values
+    json ??= <String, dynamic>{};
+
+    // Check for pagination data, default to json root if not nested
+    final paginationJson = json['pagination'] as Map<String, dynamic>? ?? json;
+
+    // Safely parse fields with fallbacks
+    final limit = paginationJson['limit'] is int
+        ? paginationJson['limit'] as int
+        : int.tryParse(paginationJson['limit']?.toString() ?? '') ?? 0;
+    final page = paginationJson['page'] is int
+        ? paginationJson['page'] as int
+        : int.tryParse(paginationJson['page']?.toString() ?? '') ?? 1;
+    final totalPage = paginationJson['totalPage'] is int
+        ? paginationJson['totalPage'] as int
+        : int.tryParse(paginationJson['totalPage']?.toString() ?? '') ?? 0;
+    final total = paginationJson['total'] is int
+        ? paginationJson['total'] as int
+        : int.tryParse(paginationJson['total']?.toString() ?? '') ?? 0;
+
+    // Check for 'data' or 'results' key, default to empty list if neither exists
+    final resultsJson = json['data'] as List<dynamic>? ??
+                       json['results'] as List<dynamic>? ??
+                       <dynamic>[];
+
+    // Parse results, handling null or invalid items
+    final results = resultsJson
+        .where((item) => item is Map<String, dynamic>)
+        .map((item) => resultFromJson(item as Map<String, dynamic>))
+        .toList();
+
     return PaginationStructure<T>(
-      limit: json['limit'] as int,
-      offset: json['offset'] as int,
-      total: json['total'] as int,
-      results: (json['results'] as List<dynamic>)
-          .map((item) => resultFromJson(item as Map<String, dynamic>))
-          .toList(),
+      limit: limit,
+      page: page,
+      totalPage: totalPage,
+      total: total,
+      results: results,
     );
   }
 
-  /// Converts the PaginationStructure to JSON with a custom result serializer
   Map<String, dynamic> toJson({
     required Map<String, dynamic> Function(T) resultToJson,
   }) {
     return {
-      'limit': limit,
-      'offset': offset,
-      'total': total,
-      'results': results.map((item) => resultToJson(item)).toList(),
+      'pagination': {
+        'limit': limit,
+        'page': page,
+        'totalPage': totalPage,
+        'total': total,
+      },
+      'data': results.map((item) => resultToJson(item)).toList(),
     };
   }
 }
-
 // Example usage with a sample Result class:
 /*
 class EventResult {

@@ -1,37 +1,38 @@
-import 'package:calendar/models/pagination_structure_model.dart';
-import 'package:calendar/models/response_structure_model.dart';
+import 'dart:developer';
+
 import 'package:calendar/shared/error/error_type.dart';
 import 'package:calendar/utils/dio.client.dart';
 import 'package:calendar/utils/help_util.dart';
 import 'package:dio/dio.dart';
 
 class SaleService {
-    Future<ResponseStructure<PaginationStructure<Map<String, dynamic>>>>
-      getData(
-        {
-          required String? from ,
-          required String? to,
-          required String? cashier,
-          required String? platform,
-          required String? sort,
-          required String? order,
-          required String? limit,
-          required String? page,
-        }
-      ) async {
+  Future<Map<String, dynamic>> getData({
+    String? from,
+    String? to,
+    String? cashier,
+    String? platform,
+    String? sort,
+    String? order,
+    String? limit,
+    String? page,
+  }) async {
     try {
       final response = await DioClient.dio.get(
-        "/admin/sales",
+        "/admin/sales?limit=1000&page=1",
+        queryParameters: {
+          if (from != null) 'from': from,
+          if (to != null) 'to': to,
+          if (cashier != null) 'cashier': cashier,
+          if (platform != null) 'platform': platform,
+          if (sort != null) 'sort': sort,
+          if (order != null) 'order': order,
+          // if (limit != null) 'limit':limit
+        },
       );
-      return ResponseStructure<
-          PaginationStructure<Map<String, dynamic>>>.fromJson(
-        response.data as Map<String, dynamic>,
-        dataFromJson: (json) =>
-            PaginationStructure<Map<String, dynamic>>.fromJson(
-          json,
-          resultFromJson: (item) => item,
-        ),
-      );
+
+      log("Response: ${response.data}");
+
+      return response.data as Map<String, dynamic>;
     } on DioException catch (dioError) {
       if (dioError.response != null) {
         printError(
@@ -51,6 +52,13 @@ class SaleService {
       throw Exception(ErrorType.unexpectedError);
     }
   }
-
-
+  Future<void> deleteSale(int id) async {
+    try {
+      await DioClient.dio.delete("/admin/sales/$id");
+    } on DioException catch (_) {
+      rethrow;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

@@ -87,6 +87,7 @@ dependencies:
   go_router: ^15.1.1
   flutter_dotenv: ^5.2.1
   percent_indicator: ^4.2.5
+  another_flushbar: ^1.12.30
 
 dev_dependencies:
   flutter_test:
@@ -151,9 +152,16 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-  - family: Kantumruy Pro
-    fonts:
-      - asset: assets/fonts/KantumruyPro-Regular.ttf
+    - family: KantumruyPro
+      fonts:
+      - asset: assets/fonts/kantumruy-pro-khmer-400-normal.ttf
+        weight: 400
+      - asset: assets/fonts/kantumruy-pro-khmer-500-normal.ttf
+        weight: 500
+      - asset: assets/fonts/kantumruy-pro-khmer-600-normal.ttf
+        weight: 600
+      - asset: assets/fonts/kantumruy-pro-khmer-700-normal.ttf
+        weight: 700
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
@@ -161,9 +169,9 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  - family:  NewsIcon
-    fonts:
-      - asset: assets/fonts/NewsIcon.ttf
+    - family:  NewsIcon
+      fonts:
+        - asset: assets/fonts/NewsIcon.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

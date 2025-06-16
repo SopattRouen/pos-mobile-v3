@@ -1,13 +1,13 @@
 import 'dart:math';
-
-import 'package:calendar/components/pei_chart.dart';
-import 'package:calendar/components/skeleton.dart';
+import 'dart:math' as math;
 import 'package:calendar/entity/enum/e_variable.dart';
 import 'package:calendar/entity/helper/colors.dart';
 import 'package:calendar/providers/global/auth_provider.dart';
 import 'package:calendar/providers/local/home_provider.dart';
+import 'package:calendar/shared/skeleton/home_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -35,20 +35,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => HomeProvider())],
-      child: Consumer2<AuthProvider, HomeProvider>(
-        builder: (context, authProvider, homeProvider, child) {
-          return Scaffold(
-            backgroundColor: Colors.white,
-            body: RefreshIndicator(
+    return Consumer2<AuthProvider, HomeProvider>(
+      builder: (context, authProvider, homeProvider, child) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: RefreshIndicator(
               key: _refreshIndicatorKey,
               color: Colors.blue[800],
               backgroundColor: Colors.white,
               onRefresh: () => _refreshData(homeProvider),
               child:
                   homeProvider.isLoading
-                      ? const Skeleton()
+                      ? const HomeSkeleton()
+                      : homeProvider.error != null
+                      ? Center(child: Text('Something went wrong'))
                       : SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         child: Column(
@@ -62,9 +63,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -93,12 +94,12 @@ class DashboardContent extends StatelessWidget {
     return Column(
       children: [
         CategoryGrid(dashboardData: dashboardData),
-     
+
         CashierList(cashierData: dashboardData['cashierData']['data'] ?? []),
         ProductTypeChart(
           productTypeData: dashboardData['productTypeData'] ?? {},
         ),
-          StatisticChat (salesData: dashboardData['salesData'] ?? {},),
+        StatisticChat(salesData: dashboardData['salesData'] ?? {}),
       ],
     );
   }
@@ -395,6 +396,7 @@ class CategoryGrid extends StatelessWidget {
     );
   }
 }
+
 class ProductTypeChart extends StatelessWidget {
   final Map<String, dynamic> productTypeData;
 
@@ -460,38 +462,20 @@ class ProductTypeChart extends StatelessWidget {
       );
     }
 
-    // Convert productTypeData to List<DonutPieData>
-    final List<DonutPieData> chartData = List.generate(
+    // Convert productTypeData to chart data
+    final List<MapEntry<String, double>> chartData = List.generate(
       labels.length,
-      (index) => DonutPieData(
-        labels[index],
-        double.tryParse(dataValues[index]) ?? 0,
-        [
-          HColors.blue,
-          Colors.green,
-          Colors.orange,
-          Colors.purple,
-          Colors.teal,
-        ][index % 5],
-      ),
+      (index) =>
+          MapEntry(labels[index], double.tryParse(dataValues[index]) ?? 0),
     );
 
-    // Calculate total value of actual data
+    // Calculate total value
     final totalValue = chartData.fold<double>(
       0,
-      (sum, item) => sum + item.y,
+      (sum, item) => sum + item.value,
     );
 
-    // Add dummy section to make actual data occupy 50%
-    if (totalValue > 0) {
-      chartData.add(
-        DonutPieData(
-          'total',
-          totalValue,
-          Colors.grey[300]!, // Neutral color for dummy section
-        ),
-      );
-    }
+    final colors = [HColors.blue, Colors.green, Colors.teal, Colors.purple];
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -502,16 +486,161 @@ class ProductTypeChart extends StatelessWidget {
             'ស្ថិតិប្រភេទផលិតផល',
             style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
           ),
-          const SizedBox(height: 0), // Reduced from 50 to minimize gap
+          const SizedBox(height: 25),
           SizedBox(
-            height: 250, // Increased to accommodate chart and legend
-            child: DonutPie(data: chartData),
+            child: Column(
+              children: [
+                // Half circle showing combined data as segments
+                Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Background half circle
+                      CircularPercentIndicator(
+                        radius: 100.0,
+                        lineWidth: 28.0,
+                        percent: 1.0,
+                        progressColor: Colors.grey[200]!,
+                        backgroundColor: Colors.transparent,
+                        circularStrokeCap: CircularStrokeCap.butt,
+                        startAngle: 180.0,
+                        arcType: ArcType.HALF,
+                        center: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${totalValue.toInt()} ទាំងអស់',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 25),
+                            // Legend with dots
+                            Wrap(
+                              spacing: 5,
+                              runSpacing: 5,
+                              alignment: WrapAlignment.center,
+                              children: List.generate(chartData.length, (
+                                index,
+                              ) {
+                                final item = chartData[index];
+
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: colors[index % colors.length],
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${item.key} (${item.value.toInt()})',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Segments for each product type
+                      ...(() {
+                        double cumulativePercent = 0;
+                        return chartData.map((item) {
+                          final itemPercent =
+                              totalValue > 0 ? (item.value / totalValue) : 0;
+                          final segmentStart = cumulativePercent;
+                          cumulativePercent += itemPercent;
+
+                          final index = chartData.indexOf(item);
+
+                          return Transform.rotate(
+                            angle:
+                                segmentStart *
+                                math.pi, // Rotate based on cumulative percentage
+                            child: CircularPercentIndicator(
+                              radius: 100.0,
+                              lineWidth: 28.0,
+                              percent: itemPercent.toDouble(),
+                              progressColor: colors[index % colors.length],
+                              backgroundColor: Colors.transparent,
+                              circularStrokeCap: CircularStrokeCap.butt,
+                              startAngle: 180.0,
+                              arcType: ArcType.HALF,
+                            ),
+                          );
+                        }).toList();
+                      })(),
+                      // Center text showing total
+                      // Positioned(
+                      //   bottom: 15,
+                      //   child:
+                      // ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 }
+
+// class HalfCircleSegmentPainter extends CustomPainter {
+//   final List<MapEntry<String, double>> data;
+//   final List<Color> colors;
+//   final double totalValue;
+
+//   HalfCircleSegmentPainter({
+//     required this.data,
+//     required this.colors,
+//     required this.totalValue,
+//   });
+
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final center = Offset(size.width / 2, size.height);
+//     final radius = size.width / 2 - 10;
+//     final strokeWidth = 20.0;
+
+//     double startAngle = math.pi; // Start from left (180 degrees)
+
+//     for (int i = 0; i < data.length; i++) {
+//       final item = data[i];
+//       final sweepAngle =
+//           (item.value / totalValue) * math.pi; // Half circle is π radians
+
+//       final paint =
+//           Paint()
+//             ..color = colors[i % colors.length]
+//             ..style = PaintingStyle.stroke
+//             ..strokeWidth = strokeWidth
+//             ..strokeCap = StrokeCap.round;
+
+//       final rect = Rect.fromCircle(center: center, radius: radius);
+
+//       canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+
+//       startAngle += sweepAngle;
+//     }
+//   }
+
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) {
+//     return true;
+//   }
+// }
 
 class CashierList extends StatelessWidget {
   final List<dynamic> cashierData;
@@ -704,15 +833,15 @@ class StatisticChatState extends State<StatisticChat> {
       (index) => ChartData(
         labels[index],
         (dataValues[index] is String
-                ? double.tryParse(dataValues[index]) ?? 0
-                : dataValues[index]?.toDouble() ?? 0),
+            ? double.tryParse(dataValues[index]) ?? 0
+            : dataValues[index]?.toDouble() ?? 0),
       ),
     );
 
     // Handle empty or no-data cases
     if (labels.isEmpty || dataValues.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -761,7 +890,7 @@ class StatisticChatState extends State<StatisticChat> {
 
     if (!hasValidData) {
       return Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -806,16 +935,17 @@ class StatisticChatState extends State<StatisticChat> {
     }
 
     // Find the maximum value in the data
-    double maxYValue = chartData.isNotEmpty
-        ? chartData.map((data) => data.y).reduce(max)
-        : 100; // Default value if the data list is empty
+    double maxYValue =
+        chartData.isNotEmpty
+            ? chartData.map((data) => data.y).reduce(max)
+            : 100; // Default value if the data list is empty
 
     // Ensure a positive interval
     double interval = maxYValue / 10;
     interval = interval > 0 ? interval : 100; // Fallback positive interval
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -828,7 +958,9 @@ class StatisticChatState extends State<StatisticChat> {
             height: 250,
             child: SfCartesianChart(
               primaryXAxis: const CategoryAxis(
-                majorGridLines: MajorGridLines(width: 0), // Disable grid lines on X-axis
+                majorGridLines: MajorGridLines(
+                  width: 0,
+                ), // Disable grid lines on X-axis
               ),
               primaryYAxis: NumericAxis(
                 minimum: 0,

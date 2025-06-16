@@ -1,4 +1,11 @@
 import 'package:calendar/entity/helper/colors.dart';
+import 'package:calendar/providers/local/home_provider.dart';
+import 'package:calendar/providers/local/product/create_product_provider.dart';
+import 'package:calendar/providers/local/product_provider.dart';
+import 'package:calendar/providers/local/sale_provider.dart';
+import 'package:calendar/screen/product/create_product_screen.dart';
+import 'package:calendar/screen/product/detail_product.dart';
+import 'package:calendar/screen/product/update_product_screen.dart';
 import 'package:calendar/screen/product_screen.dart';
 import 'package:calendar/screen/sale_screen.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +37,18 @@ void main() async {
   }
 
   runApp(
-    ChangeNotifierProvider(create: (_) => AuthProvider(), child: const MyApp()),
+    // ChangeNotifierProvider(create: (_) => AuthProvider(), child: const MyApp()),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => SaleProvider()),
+        ChangeNotifierProvider(create: (_) => HomeProvider()),
+        ChangeNotifierProvider(create:(_)=>CreateProductProvider()),
+      ],
+      child: const MyApp(),
+    ),
   );
 }
 
@@ -44,7 +62,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       theme: ThemeData(
-        fontFamily: 'Kantumruy',
+        fontFamily: 'KantumruyPro',
         primaryColor: const Color(0xFF002458),
         colorScheme: const ColorScheme.light(
           primary: Color(0xFF002458),
@@ -116,6 +134,24 @@ final GoRouter _router = GoRouter(
           (context, state) =>
               AuthMiddleware(child: const AuthLayout(child: LoginScreen())),
     ),
+    GoRoute(
+      path: AppRoutes.createProduct,
+      builder: (context, state) => CreateProductsScreen(),
+    ),
+    GoRoute(
+      path: '${AppRoutes.productDetail}/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id'];
+        return DetailProduct(id: id!);
+      },
+    ),
+    GoRoute(
+      path: '${AppRoutes.updateProduct}/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id'];
+        return UpdateProductScreen(id: id!);
+      },
+    ),
     // Removed duplicate product route
   ],
   errorBuilder:
@@ -148,95 +184,92 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            ),
-          ],
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+          // boxShadow: [
+          //   BoxShadow(
+          //     color: Colors.black12,
+          //     blurRadius: 10,
+          //     offset: Offset(0, -2),
+          //   ),
+          // ],
+          // borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
         ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              // Skip the middle add button (index 2)
-              if (index == 2) {
-                _showAddRequestBottomSheet(context);
-                return;
-              }
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            // Skip the middle add button (index 2)
+            if (index == 2) {
+              _showAddRequestBottomSheet(context);
+              return;
+            }
 
-              setState(() => _currentIndex = index);
+            setState(() => _currentIndex = index);
 
-              switch (index) {
-                case 0:
-                  context.go(AppRoutes.home);
-                  break;
-                case 1:
-                  context.go(AppRoutes.sale);
-                  break;
-                case 3:
-                  context.go(AppRoutes.product);
-                  break;
-                case 4:
-                  context.go(AppRoutes.profile);
-                  break;
-              }
-            },
-            type: BottomNavigationBarType.fixed,
-            items: [
-              BottomNavigationBarItem(
-                icon: _buildNavIcon(Icons.home, 0),
-                activeIcon: _buildNavIcon(Icons.home, 0, active: true),
-                label: 'ទំព័រដើម',
+            switch (index) {
+              case 0:
+                context.go(AppRoutes.home);
+                break;
+              case 1:
+                context.go(AppRoutes.sale);
+                break;
+              case 3:
+                context.go(AppRoutes.product);
+                break;
+              case 4:
+                context.go(AppRoutes.profile);
+                break;
+            }
+          },
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              icon: _buildNavIcon(Icons.home, 0),
+              activeIcon: _buildNavIcon(Icons.home, 0, active: true),
+              label: 'ទំព័រដើម',
+            ),
+            BottomNavigationBarItem(
+              icon: _buildNavIcon(Icons.production_quantity_limits, 1),
+              activeIcon: _buildNavIcon(
+                Icons.production_quantity_limits,
+                1,
+                active: true,
               ),
-              BottomNavigationBarItem(
-                icon: _buildNavIcon(Icons.production_quantity_limits, 1),
-                activeIcon: _buildNavIcon(
-                  Icons.production_quantity_limits,
-                  1,
-                  active: true,
-                ),
-                label: 'ការលក់',
-              ),
-              BottomNavigationBarItem(
-                icon: GestureDetector(
-                  onTap: () {
-                    _showAddRequestBottomSheet(context);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(6.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      color: HColors.blue,
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      size: 28.0,
-                      color: HColors.yellow,
-                    ),
+              label: 'ការលក់',
+            ),
+            BottomNavigationBarItem(
+              icon: GestureDetector(
+                onTap: () {
+                  _showAddRequestBottomSheet(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(6.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: HColors.blue,
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    size: 28.0,
+                    color: HColors.yellow,
                   ),
                 ),
-                label: '',
               ),
-              BottomNavigationBarItem(
-                icon: _buildNavIcon(Icons.category_rounded, 3),
-                activeIcon: _buildNavIcon(
-                  Icons.category_rounded,
-                  3,
-                  active: true,
-                ),
-                label: 'ផលិតផល',
+              label: '',
+            ),
+            BottomNavigationBarItem(
+              icon: _buildNavIcon(Icons.category_rounded, 3),
+              activeIcon: _buildNavIcon(
+                Icons.category_rounded,
+                3,
+                active: true,
               ),
-              BottomNavigationBarItem(
-                icon: _buildNavIcon(Icons.person, 4),
-                activeIcon: _buildNavIcon(Icons.person, 4, active: true),
-                label: 'គណនី',
-              ),
-            ],
-          ),
+              label: 'ផលិតផល',
+            ),
+            BottomNavigationBarItem(
+              icon: _buildNavIcon(Icons.person, 4),
+              activeIcon: _buildNavIcon(Icons.person, 4, active: true),
+              label: 'គណនី',
+            ),
+          ],
         ),
       ),
     );
@@ -247,34 +280,34 @@ class _MainLayoutState extends State<MainLayout> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(5.0)),
       ),
       backgroundColor: Colors.white,
       builder: (BuildContext context) {
         return Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(8.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 16.0),
+              // const SizedBox(height: 16.0),
               _buildBottomSheetOption(
-                icon: Icons.account_circle,
-                label: 'សំណើរច្បាប់',
+                icon: Icons.category_rounded,
+                label: 'ផលិតផល',
+                onTap: () {
+                  context.push(AppRoutes.createProduct);
+                  // Add your navigation logic here
+                },
+              ),
+              // const SizedBox(height: 12.0),
+              _buildBottomSheetOption(
+                icon: Icons.category_rounded,
+                label: 'ប្រភេទផលិតផល',
                 onTap: () {
                   Navigator.pop(context);
                   // Add your navigation logic here
                 },
               ),
-              const SizedBox(height: 12.0),
-              _buildBottomSheetOption(
-                icon: Icons.airplanemode_active_rounded,
-                label: 'សំណើរបេសកកម្ម',
-                onTap: () {
-                  Navigator.pop(context);
-                  // Add your navigation logic here
-                },
-              ),
-              const SizedBox(height: 16.0),
+              // const SizedBox(height: 16.0),
             ],
           ),
         );
@@ -287,34 +320,36 @@ class _MainLayoutState extends State<MainLayout> {
     required String label,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                shape: BoxShape.circle,
+      child: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          // decoration: BoxDecoration(
+          //   // color: Colors.white,
+          //   borderRadius: BorderRadius.circular(2.0),
+          // ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 24.0, color: HColors.darkgrey),
               ),
-              child: Icon(icon, size: 24.0, color: Colors.blue[800]),
-            ),
-            const SizedBox(width: 12.0),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
+              const SizedBox(width: 12.0),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w500,
+                  // color: Colors.grey.shade800,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -329,7 +364,7 @@ class _MainLayoutState extends State<MainLayout> {
         color:
             active && _currentIndex == index
                 ? Theme.of(context).colorScheme.secondary
-              : HColors.darkgrey,
+                : HColors.darkgrey,
       ),
     );
   }

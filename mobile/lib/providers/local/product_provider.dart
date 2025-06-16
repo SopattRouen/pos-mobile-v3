@@ -1,5 +1,3 @@
-import 'package:calendar/models/pagination_structure_model.dart';
-import 'package:calendar/models/response_structure_model.dart';
 import 'package:calendar/services/product_service.dart';
 import 'package:flutter/material.dart';
 
@@ -7,8 +5,8 @@ class ProductProvider extends ChangeNotifier {
   // Feilds
   bool _isLoading = false;
   String? _error;
-  ResponseStructure<PaginationStructure<Map<String, dynamic>>>? _productData;
-  ResponseStructure<Map<String, dynamic>>? _productType;
+  Map<String, dynamic>? _productData;
+  Map<String, dynamic>? _productType;
 
   // Services
   final ProductService _service = ProductService();
@@ -17,9 +15,8 @@ class ProductProvider extends ChangeNotifier {
   // Getters
   bool get isLoading => _isLoading;
   String? get error => _error;
-  ResponseStructure<PaginationStructure<Map<String, dynamic>>>? get productData =>
-      _productData;
-  ResponseStructure<Map<String, dynamic>>? get productType => _productType;
+  Map<String, dynamic>? get productData => _productData;
+  Map<String, dynamic>? get productType => _productType;
 
   // Setters
 
@@ -31,7 +28,7 @@ class ProductProvider extends ChangeNotifier {
   // Functions
   Future<void> getHome({
     String? key,
-    
+
     String? sort,
     String? order,
     String? limit,
@@ -47,13 +44,35 @@ class ProductProvider extends ChangeNotifier {
         limit: limit,
         page: page,
       );
-      final res = await _service.getProductType();
-      // final res = await _createRequestService.dataSetup();
-      // _dataSetup = res;
-      _productType =res;
+      // final res = await _service.getProductType();
+      // // final res = await _createRequestService.dataSetup();
+      // // _dataSetup = res;
+      // _productType = res;
       _productData = response;
     } catch (e) {
       _error = "Invalid Credential.";
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteProduct(int id) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      // Assuming ProductService has a delete method
+      await _service.deleteProduct(id);
+      // Update productData by removing the deleted product
+      if (_productData != null && _productData?['data'] is List) {
+        _productData!['data'] =
+            (_productData!['data'] as List)
+                .where((product) => product['id'] != id)
+                .toList();
+      }
+      _error = null;
+    } catch (e) {
+      _error = 'Failed to delete product.';
     } finally {
       _isLoading = false;
       notifyListeners();

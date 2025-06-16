@@ -11,4 +11,7 @@ class AppRoutes {
   static const String request = '/request';
   static const String users = '/users';
   static const String product = '/product';
+  static const String createProduct = '/create-product';
+  static const String productDetail= '/product-detail';
+  static const String updateProduct= '/product-update';
 }

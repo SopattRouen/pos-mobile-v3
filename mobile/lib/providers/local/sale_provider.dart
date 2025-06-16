@@ -1,34 +1,22 @@
-import 'package:calendar/models/pagination_structure_model.dart';
-import 'package:calendar/models/response_structure_model.dart';
-import 'package:calendar/services/sale_service.dart';
 import 'package:flutter/material.dart';
+import 'package:calendar/services/sale_service.dart';
+import 'package:intl/intl.dart';
 
 class SaleProvider extends ChangeNotifier {
-  // Feilds
   bool _isLoading = false;
   String? _error;
-  ResponseStructure<PaginationStructure<Map<String, dynamic>>>? _saleData;
-  ResponseStructure<Map<String, dynamic>>? _dataSetup;
+  Map<String, dynamic>? _saleData;
+  List<Map<String, dynamic>> _groupedTransactions = [];
+  double _totalSales = 0.0;
 
-  // Services
   final SaleService _saleService = SaleService();
-  // final CreateRequestService _createRequestService = CreateRequestService();
 
-  // Getters
   bool get isLoading => _isLoading;
   String? get error => _error;
-  ResponseStructure<PaginationStructure<Map<String, dynamic>>>? get saleData =>
-      _saleData;
-  ResponseStructure<Map<String, dynamic>>? get dataSetup => _dataSetup;
+  Map<String, dynamic>? get saleData => _saleData;
+  List<Map<String, dynamic>> get groupedTransactions => _groupedTransactions;
+  double get totalSales => _totalSales;
 
-  // Setters
-
-  // Initialize
-  SaleProvider() {
-    getHome();
-  }
-
-  // Functions
   Future<void> getHome({
     String? from,
     String? to,
@@ -36,11 +24,11 @@ class SaleProvider extends ChangeNotifier {
     String? platform,
     String? sort,
     String? order,
-    String? limit,
-    String? page,
   }) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
+
     try {
       final response = await _saleService.getData(
         from: from,
@@ -49,14 +37,79 @@ class SaleProvider extends ChangeNotifier {
         platform: platform,
         sort: sort,
         order: order,
-        limit: limit,
-        page: page,
       );
-      // final res = await _createRequestService.dataSetup();
-      // _dataSetup = res;
       _saleData = response;
+      _processSaleData();
     } catch (e) {
-      _error = "Invalid Credential.";
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void _processSaleData() {
+    if (_saleData == null || _saleData!['data'] == null) return;
+
+    _totalSales = 0.0;
+    Map<String, List<Map<String, dynamic>>> groupedByDate = {};
+
+    final transactions = _saleData!['data'] as List<dynamic>;
+    for (var transaction in transactions) {
+      final transactionMap = transaction as Map<String, dynamic>;
+      final totalPrice =
+          (transactionMap['total_price'] as num?)?.toDouble() ?? 0.0;
+      _totalSales += totalPrice;
+
+      final orderedAt = transactionMap['ordered_at'];
+      if (orderedAt is! String) {
+        continue; // Skip if ordered_at is not a String
+      }
+
+      try {
+        String date = DateFormat(
+          'MMMM d',
+        ).format(DateTime.parse(orderedAt).toLocal());
+
+        if (!groupedByDate.containsKey(date)) {
+          groupedByDate[date] = [];
+        }
+        groupedByDate[date]!.add(transactionMap);
+      } catch (e) {
+        // Skip transactions with invalid date formats
+        continue;
+      }
+    }
+
+    _groupedTransactions =
+        groupedByDate.entries.map((entry) {
+            return {'date': entry.key, 'transactions': entry.value};
+          }).toList()
+          ..sort(
+            (a, b) => DateFormat('MMMM d')
+                .parse(b['date'] as String)
+                .compareTo(DateFormat('MMMM d').parse(a['date'] as String)),
+          );
+  }
+
+  Future<void> deleteSale(int id) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _saleService.deleteSale(id);
+      // Update saleData by removing the deleted sale
+      if (_saleData != null && _saleData!['data'] is List) {
+        _saleData!['data'] =
+            (_saleData!['data'] as List)
+                .where((transaction) => transaction['id'] != id)
+                .toList();
+        _processSaleData(); // Reprocess to update groupedTransactions and totalSales
+      }
+      _error = null;
+    } catch (e) {
+      _error = 'Failed to delete sale: ${e.toString()}';
     } finally {
       _isLoading = false;
       notifyListeners();
