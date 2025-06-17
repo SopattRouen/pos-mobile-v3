@@ -99,40 +99,46 @@ class CreateProductProvider extends ChangeNotifier {
   }
 
   Future<void> updateProduct({
-    required String id,
-    required String name,
-    required String code,
-    required int typeId,
-    required int price,
-    String? image,
-  }) async {
-    _isLoading = true;
-    _error = null; // Reset error before starting
-    _createdProduct = null; // Reset created product
-    notifyListeners();
-    try {
-      final data = {
-        'name': name,
-        'code': code,
-        'type_id': typeId.toString(),
-        'unit_price': price.toString(),
-      };
-      // Only include image if provided
-      if (image != null) {
-        data['image'] = "data:image/png;base64,$image";
-      }
-      final response = await DioClient.dio.put(
-        "/admin/products/$id",
-        data: data,
-      );
-      _createdProduct = response.data as Map<String, dynamic>;
-    } on DioException catch (e) {
-      _error = e.response?.data['message']?.toString() ?? "Failed to update product.";
-    } catch (e) {
-      _error = "An unexpected error occurred.";
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+  required String id,
+  required String name,
+  required String code,
+  required int typeId,
+  required int price,
+  String? image,
+}) async {
+  _isLoading = true;
+  _error = null; // Reset error before starting
+  _createdProduct = null; // Reset created product
+  notifyListeners();
+  try {
+    final data = {
+      'name': name,
+      'code': code,
+      'type_id': typeId.toString(),
+      'unit_price': price.toString(),
+    };
+    // Only include image if provided, and ensure no double prefix
+    if (image != null) {
+      // Remove existing prefix if present to avoid duplication
+      String base64Image = image.startsWith('data:image')
+          ? image.split(',').length > 1
+              ? image.split(',').last
+              : image
+          : image;
+      data['image'] = "data:image/png;base64,$base64Image";
     }
+    final response = await DioClient.dio.put(
+      "/admin/products/$id",
+      data: data,
+    );
+    _createdProduct = response.data as Map<String, dynamic>;
+  } on DioException catch (e) {
+    _error = e.response?.data['message']?.toString() ?? "Failed to update product.";
+  } catch (e) {
+    _error = "An unexpected error occurred.";
+  } finally {
+    _isLoading = false;
+    notifyListeners();
   }
+}
 }

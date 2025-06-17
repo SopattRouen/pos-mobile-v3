@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 void printError({required String? errorMessage, int? statusCode}) {
   final message = errorMessage ?? 'Unknown error';
   final statusText = statusCode != null ? 'Status: $statusCode - ' : '';
+  print(message);
+  print(statusText);
 }
 
 String formatTimeToHour(String? isoTimestamp) {

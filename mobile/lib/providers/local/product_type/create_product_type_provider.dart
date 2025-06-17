@@ -1,4 +1,3 @@
-
 import 'package:calendar/services/product_service.dart';
 import 'package:calendar/utils/dio.client.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,8 @@ class CreateProductTypeProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   Map<String, dynamic>? _dataSetup;
-  Map<String, dynamic>? _createdProduct; // Store the created/updated product response
+  Map<String, dynamic>?
+  _createdProduct; // Store the created/updated product response
   Map<String, dynamic>? _productDetails; // Store fetched product details
 
   // Services
@@ -59,15 +59,13 @@ class CreateProductTypeProvider extends ChangeNotifier {
     try {
       final response = await DioClient.dio.post(
         "/admin/products/types",
-        data: {
-          'name': name,
-        
-          'image': "data:image/png;base64,$image",
-        },
+        data: {'name': name, 'image': "data:image/png;base64,$image"},
       );
       _createdProduct = response.data as Map<String, dynamic>;
     } on DioException catch (e) {
-      _error = e.response?.data['message']?.toString() ?? "Failed to create product.";
+      _error =
+          e.response?.data['message']?.toString() ??
+          "Failed to create product.";
     } catch (e) {
       _error = "An unexpected error occurred.";
     } finally {
@@ -76,10 +74,10 @@ class CreateProductTypeProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateProductType({
+  Future updateProductType({
     required String id,
     required String name,
-    String? image,
+    String? image, // Should be base64 string
   }) async {
     _isLoading = true;
     _error = null; // Reset error before starting
@@ -88,17 +86,16 @@ class CreateProductTypeProvider extends ChangeNotifier {
     try {
       final data = {
         'name': name,
-      
       };
       // Only include image if provided
       if (image != null) {
-        data['image'] = "data:image/png;base64,$image";
+        data['image'] = image; // Already base64 encoded
       }
       final response = await DioClient.dio.put(
         "/admin/products/types/$id",
         data: data,
       );
-      _createdProduct = response.data as Map<String, dynamic>;
+      _createdProduct = response.data as Map<String, dynamic>?;
     } on DioException catch (e) {
       _error = e.response?.data['message']?.toString() ?? "Failed to update product.";
     } catch (e) {

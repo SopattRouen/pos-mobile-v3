@@ -50,6 +50,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => HomeProvider()),
         ChangeNotifierProvider(create: (_) => CreateProductProvider()),
         ChangeNotifierProvider(create: (_) => ProductTypeProvider()),
+        
       ],
       child: const MyApp(),
     ),
@@ -166,10 +167,12 @@ final GoRouter _router = GoRouter(
       },
     ),
     GoRoute(
-      path: '${AppRoutes.updateProductType}/:id',
+      path: '${AppRoutes.updateProductType}/:id/:image/:name',
       builder: (context, state) {
         final id = state.pathParameters['id'];
-        return UpdateProductTypeScreen(id: id!);
+        final image = state.pathParameters['image'];
+        final name = state.pathParameters['name'];
+        return UpdateProductTypeScreen(id: id!, image: image!, name: name!,);
       },
     ),
     // Removed duplicate product route

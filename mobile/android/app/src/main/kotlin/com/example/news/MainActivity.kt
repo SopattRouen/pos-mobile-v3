@@ -1,4 +1,4 @@
-package com.camcyber.calendar
+package com.camcyber.posv3
 
 import io.flutter.embedding.android.FlutterActivity
 
