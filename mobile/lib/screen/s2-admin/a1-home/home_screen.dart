@@ -4,6 +4,7 @@ import 'package:calendar/entity/enum/e_variable.dart';
 import 'package:calendar/entity/helper/colors.dart';
 import 'package:calendar/providers/global/auth_provider.dart';
 import 'package:calendar/providers/local/home_provider.dart';
+import 'package:calendar/shared/component/role_swiching.dart';
 import 'package:calendar/shared/skeleton/home_skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -214,6 +215,16 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
                 icon: Icons.notifications,
                 onPressed: () {
                   // Add notification functionality
+                },
+              ),
+              // In your MainLayout's AppBar actions or somewhere appropriate
+              IconButton(
+                icon: const Icon(Icons.switch_account),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const RoleSwitcherDialog(),
+                  );
                 },
               ),
             ],
@@ -841,7 +852,7 @@ class StatisticChatState extends State<StatisticChat> {
     // Handle empty or no-data cases
     if (labels.isEmpty || dataValues.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -890,7 +901,7 @@ class StatisticChatState extends State<StatisticChat> {
 
     if (!hasValidData) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -945,7 +956,7 @@ class StatisticChatState extends State<StatisticChat> {
     interval = interval > 0 ? interval : 100; // Fallback positive interval
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 0,horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

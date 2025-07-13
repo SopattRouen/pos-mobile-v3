@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:calendar/providers/global/auth_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../screen/login_screen.dart';
+import '../screen/s1-account/login_screen.dart';
 
 class AuthMiddleware extends StatelessWidget {
   final Widget child;

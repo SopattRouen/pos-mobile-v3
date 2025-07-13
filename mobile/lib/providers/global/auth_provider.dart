@@ -178,6 +178,41 @@ class AuthProvider extends ChangeNotifier {
       rethrow;
     }
   }
+  Future<void> switchRole(Map<String, dynamic> role) async {
+    try {
+      // Update the primary role in secure storage
+      await _storage.write(key: 'role_name', value: role['name'] ?? '');
+      await _storage.write(key: 'role_slug', value: role['slug'] ?? '');
+      await _storage.write(
+        key: 'is_default_role',
+        value: role['is_default']?.toString() ?? 'false',
+      );
+      
+      notifyListeners();
+    } catch (e) {
+      print('Error switching role: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getCurrentRole() async {
+    try {
+      String? rolesJson = await _storage.read(key: 'all_roles');
+      String? currentRoleSlug = await _storage.read(key: 'role_slug');
+      
+      if (rolesJson != null && currentRoleSlug != null) {
+        List<dynamic> roles = json.decode(rolesJson);
+        return roles.firstWhere(
+          (role) => role['slug'] == currentRoleSlug,
+          orElse: () => null,
+        );
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
 
   // Helper methods to get user data
   Future<String?> getUserName() async {

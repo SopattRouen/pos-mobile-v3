@@ -4,14 +4,14 @@ import 'package:calendar/providers/local/product/create_product_provider.dart';
 import 'package:calendar/providers/local/product_provider.dart';
 import 'package:calendar/providers/local/product_type_provider.dart';
 import 'package:calendar/providers/local/sale_provider.dart';
-import 'package:calendar/screen/product/create_product_screen.dart';
-import 'package:calendar/screen/product/detail_product.dart';
-import 'package:calendar/screen/product/update_product_screen.dart';
-import 'package:calendar/screen/product_screen.dart';
-import 'package:calendar/screen/product_type/create_product_type_screen.dart';
-import 'package:calendar/screen/product_type/update_product_type_screen.dart';
-import 'package:calendar/screen/product_type_screen.dart';
-import 'package:calendar/screen/sale_screen.dart';
+import 'package:calendar/screen/s2-admin/a3-product/product/create_product_screen.dart';
+import 'package:calendar/screen/s2-admin/a3-product/product/detail_product.dart';
+import 'package:calendar/screen/s2-admin/a3-product/product/update_product_screen.dart';
+import 'package:calendar/screen/s2-admin/a3-product/product_screen.dart';
+import 'package:calendar/screen/s2-admin/a3-product/product_type/create_product_type_screen.dart';
+import 'package:calendar/screen/s2-admin/a3-product/product_type/update_product_type_screen.dart';
+import 'package:calendar/screen/s2-admin/a3-product/product_type_screen.dart';
+import 'package:calendar/screen/s2-admin/a2-sale/sale_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
@@ -19,9 +19,9 @@ import 'package:calendar/app_routes.dart';
 import 'package:calendar/middleware/auth_middleware.dart';
 import 'package:calendar/providers/global/auth_provider.dart';
 
-import 'package:calendar/screen/home_screen.dart';
-import 'package:calendar/screen/login_screen.dart';
-import 'package:calendar/screen/profile_screen.dart';
+import 'package:calendar/screen/s2-admin/a1-home/home_screen.dart';
+import 'package:calendar/screen/s1-account/login_screen.dart';
+import 'package:calendar/screen/s1-account/profile_screen.dart';
 import 'package:calendar/utils/dio.client.dart';
 
 import 'package:provider/provider.dart';
@@ -44,7 +44,6 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => SaleProvider()),
         ChangeNotifierProvider(create: (_) => HomeProvider()),
