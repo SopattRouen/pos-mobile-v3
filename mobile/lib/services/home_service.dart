@@ -1,8 +1,16 @@
+// =======================>> Third-party Packages
+import 'package:dio/dio.dart';
+
+// =======================>> Local Models
 import 'package:calendar/models/response_structure_model.dart';
+
+// =======================>> Shared Components
 import 'package:calendar/shared/error/error_type.dart';
+
+// =======================>> Local Utilities
 import 'package:calendar/utils/dio.client.dart';
 import 'package:calendar/utils/help_util.dart';
-import 'package:dio/dio.dart';
+
 
 class DashboardService {
   Future<ResponseStructure<Map<String, dynamic>>> getData() async {

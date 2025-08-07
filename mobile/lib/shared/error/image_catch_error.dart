@@ -1,7 +1,12 @@
+// =======================>> Dart Core
 import 'dart:io';
 
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
-import 'package:calendar/entity/enum/e_variable.dart';
+
+// =======================>> Shared Components
+import 'package:calendar/shared/entity/enum/e_variable.dart';
+
 
 class SafeCircleAvatar extends StatelessWidget {
   final String? imageUrl;

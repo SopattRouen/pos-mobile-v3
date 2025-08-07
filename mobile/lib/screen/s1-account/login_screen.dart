@@ -1,6 +1,14 @@
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
+
+// =======================>> Providers Components
 import 'package:calendar/providers/global/auth_provider.dart';
 import 'package:provider/provider.dart';
+
+// =======================>> Shared Components
+import 'package:calendar/shared/entity/helper/colors.dart';
+
+// =======================>> Local Utilities
 import 'package:go_router/go_router.dart';
 import 'package:calendar/app_routes.dart';
 
@@ -62,161 +70,220 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showError(String message) {
     if (!mounted) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           return Scaffold(
             backgroundColor: Colors.white,
-            body: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
+            body: SafeArea(
+              child: Stack(
                 children: [
-                  // Expanded to take up remaining space and center its content
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Add some top padding to avoid overlap with status bar
-                        SizedBox(
-                            height: MediaQuery.of(context).padding.top + 20),
-                        Container(
-                          height: 100,
-                          width: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.phone_android_rounded,
-                              size: 48,
-                              color: Colors.black,
-                            ),
+                  // Background image positioned at top-left
+                  Positioned(
+                    left: 0,
+                    bottom: 40,
+                    child: Opacity(
+                      opacity: isDarkMode ? 0.3 : 0.5,
+                      child: Container(
+                        width: 150,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/Kbach.png'),
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'ចូលគណនីរបស់អ្នក',
-                          style: TextStyle(fontSize: 24),
-                        ),
-                        const SizedBox(height: 32),
-                        TextField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.person_outline_sharp),
-                            labelText: 'លេខទូរស័ព្ទ ឬ អ៊ីម៉ែល',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Colors.black,
-                                width: 1.0,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Theme.of(context).primaryColor,
-                                width: 2.0,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: _obscureText,
-                          onSubmitted: (_) => _handleLogin(authProvider),
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            labelText: 'ពាក្យសម្ងាត់',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureText
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText = !_obscureText;
-                                });
-                              },
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: Colors.black,
-                                width: 1.0,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Theme.of(context).primaryColor,
-                                width: 2.0,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const SizedBox(height: 20),
-                      ],
+                      ),
                     ),
                   ),
-                  // Bottom button
+
+                  // // Additional decorative background elements (optional)
+                  // Positioned(
+                  //   right: 0,
+                  //   bottom: 100,
+                  //   child: Opacity(
+                  //     opacity: isDarkMode ? 0.2 : 0.3,
+                  //     child: Container(
+                  //       width: 80,
+                  //       height: 80,
+                  //       decoration: BoxDecoration(
+                  //         image: DecorationImage(
+                  //           image: AssetImage('lib/assets/images/f.png'),
+                  //           fit: BoxFit.cover,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+
+                  // Main login content
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 24.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () => _handleLogin(authProvider),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: !authProvider.isLoading
-                            ? const Text(
-                                'ចូលប្រព័ន្ធ',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      children: [
+                        // Expanded to take up remaining space and center its content
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Add some top padding to avoid overlap with status bar
+                              SizedBox(
+                                height: MediaQuery.of(context).padding.top + 20,
+                              ),
+                              Container(
+                                height: 100,
+                                width: 100,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  shape: BoxShape.circle,
                                 ),
-                              )
-                            : const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.phone_android_rounded,
+                                    size: 48,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
-                      ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'ចូលគណនីរបស់អ្នក',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              TextField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(
+                                    Icons.person_outline_sharp,
+                                    color: HColors.darkgrey,
+                                  ),
+                                  labelText: 'លេខទូរស័ព្ទ ឬ អ៊ីម៉ែល',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: HColors.darkgrey,
+                                      width: 1.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Theme.of(context).primaryColor,
+                                      width: 2.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: _passwordController,
+                                obscureText: _obscureText,
+                                obscuringCharacter: '*',
+                                textAlign: TextAlign.start,
+                                onSubmitted: (_) => _handleLogin(authProvider),
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(
+                                    Icons.lock_outline,
+                                    color: HColors.darkgrey,
+                                  ),
+                                  labelText: 'ពាក្យសម្ងាត់',
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      color: HColors.darkgrey,
+                                      _obscureText
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscureText = !_obscureText;
+                                      });
+                                    },
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: HColors.darkgrey,
+                                      width: 1.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Theme.of(context).primaryColor,
+                                      width: 2.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                              // const SizedBox(height: 24),
+                              // const SizedBox(height: 20),
+                            ],
+                          ),
+                        ),
+                        // Bottom button
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 24.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: () => _handleLogin(authProvider),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child:
+                                  !authProvider.isLoading
+                                      ? const Text(
+                                        'ចូលប្រព័ន្ធ',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                      : const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

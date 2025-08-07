@@ -1,6 +1,8 @@
-import 'package:calendar/providers/sample_provider.dart';
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
 
+// =======================>> Providers Components
+import 'package:calendar/providers/sample_provider.dart';
 import 'package:provider/provider.dart';
 
 class SampleScreen extends StatefulWidget {

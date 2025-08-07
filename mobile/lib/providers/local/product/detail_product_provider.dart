@@ -1,6 +1,12 @@
-import 'package:calendar/services/product_service.dart';
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
+
+// =======================>> Third-party Packages
 import 'package:intl/intl.dart';
+
+// =======================>> Local Services
+import 'package:calendar/services/product_service.dart';
+
 
 class DetailProductProvider extends ChangeNotifier {
   // Fields

@@ -1,16 +1,24 @@
+// =======================>> Dart Core
 import 'dart:math';
 import 'dart:math' as math;
-import 'package:calendar/entity/enum/e_variable.dart';
-import 'package:calendar/entity/helper/colors.dart';
-import 'package:calendar/providers/global/auth_provider.dart';
-import 'package:calendar/providers/local/home_provider.dart';
-import 'package:calendar/shared/component/role_swiching.dart';
-import 'package:calendar/shared/skeleton/home_skeleton.dart';
+
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
+
+// =======================>> Third-party Packages
 import 'package:intl/intl.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+
+// =======================>> Providers Components
+import 'package:calendar/providers/global/auth_provider.dart';
+import 'package:calendar/providers/local/home_provider.dart';
+
+// =======================>> Shared Components
+import 'package:calendar/shared/entity/enum/e_variable.dart';
+import 'package:calendar/shared/entity/helper/colors.dart';
+import 'package:calendar/shared/skeleton/home_skeleton.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,6 +30,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+
   Future<void> _refreshData(HomeProvider provider) async {
     return await provider.getHome();
   }
@@ -38,50 +49,42 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Consumer2<AuthProvider, HomeProvider>(
       builder: (context, authProvider, homeProvider, child) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: RefreshIndicator(
-              key: _refreshIndicatorKey,
-              color: Colors.blue[800],
-              backgroundColor: Colors.white,
-              onRefresh: () => _refreshData(homeProvider),
-              child:
-                  homeProvider.isLoading
-                      ? const HomeSkeleton()
-                      : homeProvider.error != null
-                      ? Center(child: Text('Something went wrong'))
-                      : SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Column(
-                          children: [
-                            UserProfileHeader(authProvider: authProvider),
-                            if (homeProvider.data != null)
-                              DashboardContent(
-                                dashboardData: homeProvider.data!.data,
+        return ScaffoldMessenger(
+          key: _scaffoldMessengerKey,
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            body: SafeArea(
+              child: RefreshIndicator(
+                key: _refreshIndicatorKey,
+                color: Colors.blue[800],
+                backgroundColor: Colors.white,
+                onRefresh: () => _refreshData(homeProvider),
+                child:
+                    homeProvider.isLoading
+                        ? const HomeSkeleton()
+                        : homeProvider.error != null
+                        ? Center(child: Text('Something went wrong'))
+                        : SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            children: [
+                              UserProfileHeader(
+                                authProvider: authProvider,
+                                scaffoldMessengerKey: _scaffoldMessengerKey,
                               ),
-                          ],
+                              if (homeProvider.data != null)
+                                DashboardContent(
+                                  dashboardData: homeProvider.data!.data,
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
+              ),
             ),
           ),
         );
       },
     );
-  }
-}
-
-String _getTimeBasedGreeting() {
-  final hour = DateTime.now().hour;
-
-  if (hour >= 5 && hour < 12) {
-    return 'អរុណសួស្ដី';
-  } else if (hour >= 12 && hour < 17) {
-    return 'សាយយ័ន្តសួស្ដី';
-  } else if (hour >= 17 && hour < 21) {
-    return 'Good Evening';
-  } else {
-    return 'Good Night';
   }
 }
 
@@ -108,8 +111,13 @@ class DashboardContent extends StatelessWidget {
 
 class UserProfileHeader extends StatefulWidget {
   final AuthProvider authProvider;
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
 
-  const UserProfileHeader({super.key, required this.authProvider});
+  const UserProfileHeader({
+    super.key,
+    required this.authProvider,
+    required this.scaffoldMessengerKey,
+  });
 
   @override
   State<UserProfileHeader> createState() => _UserProfileHeaderState();
@@ -127,13 +135,13 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
     _loadUserData();
   }
 
-  final greeting = _getTimeBasedGreeting();
   Future<void> _loadUserData() async {
     try {
       final name = await widget.authProvider.getUserName();
       final avatar = await widget.authProvider.getUserAvatar();
       final role = await widget.authProvider.getUserRole();
 
+      print("🔍 Loading user data - Name: $name, Role: $role,");
       if (mounted) {
         setState(() {
           userName = name ?? 'Unknown User';
@@ -143,6 +151,7 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
         });
       }
     } catch (e) {
+      print("❌ Error loading user data: $e");
       if (mounted) {
         setState(() {
           userName = 'Unknown User';
@@ -153,81 +162,142 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
     }
   }
 
+  void showBottomSwitchRole() async {
+    final roles = await widget.authProvider.getAllRoles();
+    final currentRole = await widget.authProvider.getCurrentRole();
+    final currentRoleId = currentRole?['id'].toString();
+
+    if (roles == null || roles.isEmpty) {
+      widget.scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text('No roles available')),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      useRootNavigator: true,
+      isScrollControlled: false,
+
+      context: context,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: roles.length,
+              itemBuilder: (context, index) {
+                final role = roles[index];
+                final roleId = role['id'].toString();
+                final isCurrent = roleId == currentRoleId;
+
+                return ListTile(
+                  leading: Icon(Icons.person, color: HColors.darkgrey),
+                  title: Text(role['name']),
+                  trailing:
+                      isCurrent
+                          ? Icon(Icons.check_circle, color: Colors.green)
+                          : null,
+                  onTap: () async {
+                    if (isCurrent) return;
+
+                    Navigator.pop(context); // Close the bottom sheet
+                    // print("✅ Bottom sheet dismissed");
+
+                    final navigator = Navigator.of(context);
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder:
+                          (ctx) => Center(child: CircularProgressIndicator()),
+                    ).then((_) => print("✅ Loading dialog closed"));
+
+                    try {
+                      await widget.authProvider.switchRoleApi(
+                        defRoleId: currentRoleId ?? '',
+                        swRoleId: role['id'].toString(),
+                      );
+
+                      navigator.pop(); // Dismiss dialog
+                      // print("✅ Loading dialog dismissed");
+
+                      // Always refresh user data after switch attempt to sync with the latest token
+                      await _loadUserData();
+
+                      // final updatedRole =
+                      //     await widget.authProvider.getCurrentRole();
+                      // final message =
+                      //     roleId == updatedRole?['id'].toString()
+                      //         ? 'Switched to ${role['name']}'
+                      //         : '${role['name']} is already the current role';
+                      // widget.scaffoldMessengerKey.currentState?.showSnackBar(
+                      //   SnackBar(content: Text(message)),
+                      // );
+                      // print("✅ SnackBar shown: $message");
+                      // print(
+                      //   "🔍 Updated current role: ${updatedRole?['name']} (ID: ${updatedRole?['id']})",
+                      // );
+                    } catch (e) {
+                      navigator.pop(); // Dismiss dialog
+                      // print("✅ Loading dialog dismissed on error");
+
+                      // widget.scaffoldMessengerKey.currentState?.showSnackBar(
+                      //   SnackBar(content: Text('Failed to switch role: $e')),
+                      // );
+                      // print("❌ Error SnackBar shown: $e");
+                    }
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
       elevation: 0,
       automaticallyImplyLeading: false,
-      title: Row(
-        children: [
-          // const SizedBox(width: 12),
-          // User Profile
-          Expanded(
-            child: Row(
-              children: [
-                // Avatar
-                _buildAvatar(),
-                const SizedBox(width: 12),
-                // User Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "$userName",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        userRole ?? 'No Role',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+
+      // leadingWidth: 150,
+      leading: Padding(
+        padding: const EdgeInsets.all(2),
+        child: Stack(
+          // alignment: Alignment.centerLeft,
+          children: [
+            Positioned(
+              top: -2,
+              left: -15,
+              child: Image.asset(
+                'assets/images/Kbach.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+              ),
             ),
-          ),
-        ],
+
+            Image.asset(
+              'assets/logo/posmobile1.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+            ),
+          ],
+        ),
       ),
+      title: Text("ប្រព័ន្ធគ្រប់គ្រងការលក់", style: TextStyle(fontSize: 18)),
+      centerTitle: true,
+
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: Row(
-            children: [
-              _IconButton(
-                icon: Icons.download,
-                onPressed: () {
-                  // Add download functionality
-                },
-              ),
-              const SizedBox(width: 8.0),
-              _IconButton(
-                icon: Icons.notifications,
-                onPressed: () {
-                  // Add notification functionality
-                },
-              ),
-              // In your MainLayout's AppBar actions or somewhere appropriate
-              IconButton(
-                icon: const Icon(Icons.switch_account),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const RoleSwitcherDialog(),
-                  );
-                },
-              ),
-            ],
+          child: GestureDetector(
+            onTap: showBottomSwitchRole,
+            child: Row(children: [_buildAvatar()]),
           ),
         ),
       ],
@@ -235,36 +305,55 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
   }
 
   Widget _buildAvatar() {
-    if (userAvatar != null && userAvatar!.isNotEmpty) {
-      // If avatar is a full URL
-      if (userAvatar!.startsWith('http')) {
-        return ClipOval(
-          child: Container(
-            color: HColors.darkgrey.withOpacity(0.1),
-            child: Image.network(
-              userAvatar!,
-              width: 40.0,
-              height: 40.0,
+    Widget avatarImage;
 
-              fit: BoxFit.cover,
-              errorBuilder:
-                  (context, error, stackTrace) => _buildDefaultAvatar(),
-            ),
-          ),
+    if (userAvatar != null && userAvatar!.isNotEmpty) {
+      if (userAvatar!.startsWith('http')) {
+        avatarImage = Image.network(
+          userAvatar!,
+          width: 25.0,
+          height: 25.0,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(),
         );
       } else {
-        return ClipOval(
-          child: Image.network(
-            '$mainUrlFile$userAvatar', // Replace with your domain
-            width: 40.0,
-            height: 40.0,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(),
-          ),
+        avatarImage = Image.network(
+          '$mainUrlFile$userAvatar',
+          width: 25.0,
+          height: 25.0,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(),
         );
       }
+    } else {
+      avatarImage = _buildDefaultAvatar();
     }
-    return _buildDefaultAvatar();
+
+    return Stack(
+      children: [
+        ClipOval(
+          child: Container(
+            width: 36.0,
+            height: 36.0,
+            color: Colors.grey.withOpacity(0.1),
+            child: avatarImage,
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: Colors.green,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildDefaultAvatar() {
@@ -273,13 +362,27 @@ class _UserProfileHeaderState extends State<UserProfileHeader> {
       height: 40.0,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: HColors.darkgrey.withOpacity(0.5),
+        color: Colors.grey.withOpacity(0.5),
       ),
       child: const Center(
         child: Icon(Icons.person, size: 24.0, color: Colors.white),
       ),
     );
   }
+
+  // String _getTimeBasedGreeting() {
+  //   final hour = DateTime.now().hour;
+
+  //   if (hour >= 5 && hour < 12) {
+  //     return 'អរុណសួស្ដី,';
+  //   } else if (hour >= 12 && hour < 17) {
+  //     return 'សាយយ័ន្តសួស្ដី,';
+  //   } else if (hour >= 17 && hour < 21) {
+  //     return 'សាយយ័ន្តសួស្ដី,';
+  //   } else {
+  //     return 'រាត្រីសួរស្ដី,';
+  //   }
+  // }
 }
 
 class CategoryGrid extends StatelessWidget {
@@ -381,7 +484,7 @@ class CategoryGrid extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey,
+                              color: HColors.darkgrey,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -803,14 +906,17 @@ class _IconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onPressed,
-      child: Container(
-        width: 36.0,
-        height: 36.0,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: HColors.darkgrey.withOpacity(0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          width: 36.0,
+          height: 36.0,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: HColors.darkgrey.withOpacity(0.1),
+          ),
+          child: Center(child: Icon(icon, color: HColors.darkgrey, size: 24.0)),
         ),
-        child: Center(child: Icon(icon, color: HColors.darkgrey, size: 24.0)),
       ),
     );
   }

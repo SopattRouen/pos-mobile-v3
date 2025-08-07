@@ -1,9 +1,13 @@
-// import 'dart:developer';
+// =======================>> Third-party Packages
+import 'package:dio/dio.dart';
 
-// import 'package:calendar/shared/error/error_type.dart';
+// =======================>> Local Utilities
 import 'package:calendar/utils/dio.client.dart';
 // import 'package:calendar/utils/help_util.dart';
-import 'package:dio/dio.dart';
+
+// =======================>> Shared Components
+// import 'package:calendar/shared/error/error_type.dart';
+
 
 class ProductTypeService {
 

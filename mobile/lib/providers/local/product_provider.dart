@@ -1,5 +1,9 @@
-import 'package:calendar/services/product_service.dart';
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
+
+// =======================>> Local Services
+import 'package:calendar/services/product_service.dart';
+
 
 class ProductProvider extends ChangeNotifier {
   // Feilds

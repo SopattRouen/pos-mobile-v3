@@ -1,11 +1,15 @@
-import 'package:calendar/shared/component/bottom_appbar.dart';
-import 'package:calendar/shared/widget/helper.dart';
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:calendar/entity/helper/colors.dart';
-import 'package:calendar/providers/global/auth_provider.dart';
 
+// =======================>> Providers Components
+import 'package:calendar/providers/global/auth_provider.dart';
 import 'package:provider/provider.dart';
+
+// =======================>> Shared Components
+import 'package:calendar/shared/component/bottom_appbar.dart';
+import 'package:calendar/shared/entity/helper/colors.dart';
+import 'package:calendar/shared/widget/helper.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

@@ -1,7 +1,11 @@
+// =======================>> Third-party Packages
 import 'package:dio/dio.dart';
+
+// =======================>> Local Utilities
 import 'package:calendar/utils/dio.client.dart';
 import 'package:calendar/utils/help_util.dart';
 
+// =======================>> Shared Components
 import '../shared/error/error_type.dart';
 
 class AuthService {

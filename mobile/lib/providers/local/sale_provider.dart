@@ -1,6 +1,11 @@
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
-import 'package:calendar/services/sale_service.dart';
+
+// =======================>> Third-party Packages
 import 'package:intl/intl.dart';
+
+// =======================>> Local Services
+import 'package:calendar/services/sale_service.dart';
 
 class SaleProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -16,10 +21,15 @@ class SaleProvider extends ChangeNotifier {
   Map<String, dynamic>? get saleData => _saleData;
   List<Map<String, dynamic>> get groupedTransactions => _groupedTransactions;
   double get totalSales => _totalSales;
+
   SaleProvider() {
     // Fetch data when the provider is created
-    getHome();
+    getDataCashier(
+      sort: 'ordered_at',
+      order: 'DESC',
+    ); // Simplified initial fetch
   }
+
   Future<void> getHome({
     String? from,
     String? to,
@@ -27,6 +37,7 @@ class SaleProvider extends ChangeNotifier {
     String? platform,
     String? sort,
     String? order,
+    String? key,
   }) async {
     _isLoading = true;
     _error = null;
@@ -40,6 +51,40 @@ class SaleProvider extends ChangeNotifier {
         platform: platform,
         sort: sort,
         order: order,
+        key: key,
+      );
+      _saleData = response;
+      _processSaleData();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> getDataCashier({
+    String? from,
+    String? to,
+    String? cashier,
+    String? platform,
+    String? sort,
+    String? order,
+    String? key, // Added key parameter
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _saleService.getDataCashier(
+        from: from,
+        to: to,
+        cashier: cashier,
+        platform: platform,
+        sort: sort,
+        order: order,
+        key: key, // Pass key to service
       );
       _saleData = response;
       _processSaleData();
@@ -85,9 +130,9 @@ class SaleProvider extends ChangeNotifier {
     }
 
     _groupedTransactions =
-        groupedByDate.entries.map((entry) {
-            return {'date': entry.key, 'transactions': entry.value};
-          }).toList()
+        groupedByDate.entries
+            .map((entry) => {'date': entry.key, 'transactions': entry.value})
+            .toList()
           ..sort(
             (a, b) => DateFormat('MMMM d')
                 .parse(b['date'] as String)

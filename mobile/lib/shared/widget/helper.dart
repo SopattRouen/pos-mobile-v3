@@ -5,15 +5,16 @@ enum DialogType {
   danger,
 }
 
-Future<bool> showConfirmDialog(
+void showConfirmDialog(
   BuildContext context,
   String title,
   String message,
   DialogType type,
-  Future<void> Function() onConfirm,
-) async {
-  bool confirmed = false;
-  await showDialog(
+  VoidCallback onConfirm,
+) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  
+  showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
@@ -26,21 +27,29 @@ Future<bool> showConfirmDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            backgroundColor: Colors.white,
+            backgroundColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 16),
+
+                // Icon and Title
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Icon(
+                    //   Icons.warning,
+                    //   color: type == DialogType.primary ? Colors.blue : Colors.red,
+                    //   size: 24,
+                    // ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -48,21 +57,33 @@ Future<bool> showConfirmDialog(
                   ],
                 ),
                 const SizedBox(height: 8),
+
+                // Message
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     message,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Divider
                 Divider(
                   height: 1,
-                  color: Colors.grey.withOpacity(0.2),
+                  color: isDark 
+                    ? Colors.white.withOpacity(0.12) 
+                    : Colors.grey.withOpacity(0.2),
                 ),
+
+                // Buttons
                 Row(
                   children: [
+                    // Cancel Button
                     Expanded(
                       child: InkWell(
                         borderRadius: const BorderRadius.only(
@@ -73,9 +94,11 @@ Future<bool> showConfirmDialog(
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Text(
-                            "បោះបង់",
+                            'បិត',
                             style: TextStyle(
-                              color: isLoading ? Colors.grey : Colors.black,
+                              color: isLoading 
+                                ? (isDark ? Colors.grey[600] : Colors.grey)
+                                : (isDark ? Colors.white70 : Colors.black),
                               fontSize: 16,
                             ),
                           ),
@@ -85,8 +108,11 @@ Future<bool> showConfirmDialog(
                     Container(
                       width: 1,
                       height: 48,
-                      color: Colors.grey.withOpacity(0.2),
+                      color: isDark 
+                        ? Colors.white.withOpacity(0.12) 
+                        : Colors.grey.withOpacity(0.2),
                     ),
+                    // Confirm Button
                     Expanded(
                       child: InkWell(
                         borderRadius: const BorderRadius.only(
@@ -97,46 +123,41 @@ Future<bool> showConfirmDialog(
                             : () async {
                                 setState(() => isLoading = true);
                                 try {
-                                  await onConfirm();
-                                  confirmed = true;
+                                  await Future(() => onConfirm());
                                   if (context.mounted) {
                                     Navigator.pop(context);
                                   }
                                 } catch (e) {
                                   setState(() => isLoading = false);
-                                  confirmed = false;
                                 }
                               },
                         child: Container(
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      type == DialogType.primary ? Colors.blue : Colors.red,
+                                    ),
                                   ),
                                 )
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      type == DialogType.primary
-                                          ? Icons.check
-                                          : Icons.delete,
-                                      color: type == DialogType.primary
-                                          ? Colors.blue
-                                          : Colors.red,
+                                      type == DialogType.primary ? Icons.check : Icons.delete,
+                                      color: type == DialogType.primary ? Colors.blue : Colors.red,
                                       size: 18,
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      "បាទ/ចាស",
+                                     'បាទ/ចាស',
                                       style: TextStyle(
-                                        color: type == DialogType.primary
-                                            ? Colors.blue
-                                            : Colors.red,
+                                        color: type == DialogType.primary ? Colors.blue : Colors.red,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -155,13 +176,14 @@ Future<bool> showConfirmDialog(
       );
     },
   );
-  return confirmed;
 }
 
 void showErrorDialog(
   BuildContext context,
   String title,
 ) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  
   showDialog(
     context: context,
     barrierDismissible: true,
@@ -171,29 +193,44 @@ void showErrorDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 20),
+
+            // Error Icon
+            // const Icon(
+            //   Icons.warning_rounded,
+            //   color: Colors.red,
+            //   size: 48,
+            // ),
             const SizedBox(height: 16),
+
+            // Title
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black87,
+                  color: isDark ? Colors.white : Colors.black87,
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(height: 16),
+
+            // Divider
             Divider(
               height: 1,
-              color: Colors.grey.withOpacity(0.2),
+              color: isDark 
+                ? Colors.white.withOpacity(0.12) 
+                : Colors.grey.withOpacity(0.2),
             ),
+
+            // OK Button
             InkWell(
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(16),
@@ -228,6 +265,8 @@ void showConfirmDialogWithNavigation(
   DialogType type,
   VoidCallback onConfirm,
 ) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -241,21 +280,29 @@ void showConfirmDialogWithNavigation(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            backgroundColor: Colors.white,
+            backgroundColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 16),
+
+                // Icon and Title
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // Icon(
+                    //   Icons.warning,
+                    //   color: type == DialogType.primary ? Colors.blue : Colors.red,
+                    //   size: 24,
+                    // ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -263,21 +310,33 @@ void showConfirmDialogWithNavigation(
                   ],
                 ),
                 const SizedBox(height: 8),
+
+                // Message
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     message,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // Divider
                 Divider(
                   height: 1,
-                  color: Colors.grey.withOpacity(0.2),
+                  color: isDark 
+                    ? Colors.white.withOpacity(0.12) 
+                    : Colors.grey.withOpacity(0.2),
                 ),
+
+                // Buttons
                 Row(
                   children: [
+                    // Cancel Button
                     Expanded(
                       child: InkWell(
                         borderRadius: const BorderRadius.only(
@@ -290,7 +349,9 @@ void showConfirmDialogWithNavigation(
                           child: Text(
                             "បោះបង់",
                             style: TextStyle(
-                              color: isLoading ? Colors.grey : Colors.black,
+                              color: isLoading 
+                                ? (isDark ? Colors.grey[600] : Colors.grey)
+                                : (isDark ? Colors.white70 : Colors.black),
                               fontSize: 16,
                             ),
                           ),
@@ -300,8 +361,11 @@ void showConfirmDialogWithNavigation(
                     Container(
                       width: 1,
                       height: 48,
-                      color: Colors.grey.withOpacity(0.2),
+                      color: isDark 
+                        ? Colors.white.withOpacity(0.12) 
+                        : Colors.grey.withOpacity(0.2),
                     ),
+                    // Confirm Button
                     Expanded(
                       child: InkWell(
                         borderRadius: const BorderRadius.only(
@@ -312,7 +376,7 @@ void showConfirmDialogWithNavigation(
                             : () async {
                                 setState(() => isLoading = true);
                                 try {
-                                  onConfirm();
+                                  await Future(() => onConfirm());
                                   if (context.mounted) {
                                     Navigator.pop(context);
                                   }
@@ -324,32 +388,29 @@ void showConfirmDialogWithNavigation(
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      type == DialogType.primary ? Colors.blue : Colors.red,
+                                    ),
                                   ),
                                 )
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      type == DialogType.primary
-                                          ? Icons.check
-                                          : Icons.delete,
-                                      color: type == DialogType.primary
-                                          ? Colors.blue
-                                          : Colors.red,
+                                      type == DialogType.primary ? Icons.check : Icons.delete,
+                                      color: type == DialogType.primary ? Colors.blue : Colors.red,
                                       size: 18,
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
                                       "បាទ/ចាស",
                                       style: TextStyle(
-                                        color: type == DialogType.primary
-                                            ? Colors.blue
-                                            : Colors.red,
+                                        color: type == DialogType.primary ? Colors.blue : Colors.red,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -377,6 +438,8 @@ void showConfirmDialogWithNavigationOfSaleInvoice(
   DialogType type,
   VoidCallback onConfirm,
 ) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -385,21 +448,29 @@ void showConfirmDialogWithNavigationOfSaleInvoice(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 16),
+
+            // Icon and Title
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Icon(
+                //   Icons.warning,
+                //   color: type == DialogType.primary ? Colors.blue : Colors.red,
+                //   size: 24,
+                // ),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -407,17 +478,26 @@ void showConfirmDialogWithNavigationOfSaleInvoice(
               ],
             ),
             const SizedBox(height: 8),
+
+            // Custom Widget Message
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: message,
             ),
             const SizedBox(height: 16),
+
+            // Divider
             Divider(
               height: 1,
-              color: Colors.grey.withOpacity(0.2),
+              color: isDark 
+                ? Colors.white.withOpacity(0.12) 
+                : Colors.grey.withOpacity(0.2),
             ),
+
+            // Buttons
             Row(
               children: [
+                // Cancel Button
                 Expanded(
                   child: InkWell(
                     borderRadius: const BorderRadius.only(
@@ -427,10 +507,10 @@ void showConfirmDialogWithNavigationOfSaleInvoice(
                     child: Container(
                       alignment: Alignment.center,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: const Text(
-                        "បោះបង់",
+                      child: Text(
+                       'បិត',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: isDark ? Colors.white70 : Colors.black,
                           fontSize: 16,
                         ),
                       ),
@@ -440,8 +520,11 @@ void showConfirmDialogWithNavigationOfSaleInvoice(
                 Container(
                   width: 1,
                   height: 48,
-                  color: Colors.grey.withOpacity(0.2),
+                  color: isDark 
+                    ? Colors.white.withOpacity(0.12) 
+                    : Colors.grey.withOpacity(0.2),
                 ),
+                // Confirm Button
                 Expanded(
                   child: InkWell(
                     borderRadius: const BorderRadius.only(
@@ -458,18 +541,18 @@ void showConfirmDialogWithNavigationOfSaleInvoice(
                         children: [
                           Icon(
                             type == DialogType.primary ? Icons.check : Icons.delete,
-                            color: type == DialogType.primary
-                                ? Colors.blue
-                                : Colors.red,
+                            color: type == DialogType.primary ? Colors.blue : Colors.red,
                             size: 18,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            "បាទ/ចាស",
+                            // AppLang.translate(
+                            //   lang: Provider.of<SettingProvider>(context).lang ?? 'kh',
+                            //   key: 'yes'
+                            // ),,
+                            'បាទ/ចាស',
                             style: TextStyle(
-                              color: type == DialogType.primary
-                                  ? Colors.blue
-                                  : Colors.red,
+                              color: type == DialogType.primary ? Colors.blue : Colors.red,
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),

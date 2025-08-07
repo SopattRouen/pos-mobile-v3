@@ -1,6 +1,12 @@
-import 'package:calendar/models/response_structure_model.dart';
-import 'package:calendar/services/home_service.dart';
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
+
+// =======================>> Local Models
+import 'package:calendar/models/response_structure_model.dart';
+
+// =======================>> Local Services
+import 'package:calendar/services/home_service.dart';
+
 
 class HomeProvider extends ChangeNotifier {
   // Fields

@@ -1,6 +1,9 @@
-// Reusable Selection Field widget
-import 'package:calendar/entity/helper/colors.dart';
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
+
+// =======================>> Shared Components
+import 'package:calendar/shared/entity/helper/colors.dart';
+
 
 // Reusable Selection Field widget
 Widget buildSelectionField({

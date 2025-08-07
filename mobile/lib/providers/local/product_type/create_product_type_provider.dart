@@ -1,7 +1,12 @@
+// =======================>> Flutter Core
+import 'package:flutter/material.dart';
+
+// =======================>> Third-party Packages
+import 'package:dio/dio.dart';
+
+// =======================>> Local Services
 import 'package:calendar/services/product_service.dart';
 import 'package:calendar/utils/dio.client.dart';
-import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 
 class CreateProductTypeProvider extends ChangeNotifier {
   // Fields
@@ -84,9 +89,7 @@ class CreateProductTypeProvider extends ChangeNotifier {
     _createdProduct = null; // Reset created product
     notifyListeners();
     try {
-      final data = {
-        'name': name,
-      };
+      final data = {'name': name};
       // Only include image if provided
       if (image != null) {
         data['image'] = image; // Already base64 encoded
@@ -97,7 +100,9 @@ class CreateProductTypeProvider extends ChangeNotifier {
       );
       _createdProduct = response.data as Map<String, dynamic>?;
     } on DioException catch (e) {
-      _error = e.response?.data['message']?.toString() ?? "Failed to update product.";
+      _error =
+          e.response?.data['message']?.toString() ??
+          "Failed to update product.";
     } catch (e) {
       _error = "An unexpected error occurred.";
     } finally {

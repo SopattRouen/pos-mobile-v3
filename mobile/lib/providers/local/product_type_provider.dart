@@ -1,6 +1,12 @@
-import 'package:calendar/services/product_type_service.dart';
-import 'package:dio/dio.dart';
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
+
+// =======================>> Third-party Packages
+import 'package:dio/dio.dart';
+
+// =======================>> Local Services
+import 'package:calendar/services/product_type_service.dart';
+
 
 class ProductTypeProvider extends ChangeNotifier {
   // Feilds

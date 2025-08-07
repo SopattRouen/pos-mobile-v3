@@ -1,7 +1,14 @@
-import 'package:dio/dio.dart';
+// =======================>> Flutter Core
 import 'package:flutter/material.dart';
+
+// =======================>> Third-party Packages
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+// =======================>> Local Utilities
+import 'package:calendar/utils/network_interceptor.dart';
+
 
 class DioClient {
   static final Dio _dio = Dio(BaseOptions(
@@ -17,6 +24,10 @@ class DioClient {
   static void setupInterceptors(BuildContext context) {
     _dio.interceptors.clear(); // Clear previous interceptors
 
+
+     // Add network interceptor first
+      _dio.interceptors.add(NetworkInterceptor(context));
+      
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
